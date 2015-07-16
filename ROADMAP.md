@@ -1,13 +1,13 @@
 Done:
 
-- draw field
 - do a blocks map: I, O, L, r, S, Z, T
-- draw random block
-- do a falling block
-- next figure display
 
 To do:
 
+- draw field
+- draw random block
+- do a falling block
+- next figure display
 - handle floor collision and figure saving
 - handle figures collision
 - figures control
