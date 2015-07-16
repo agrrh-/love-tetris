@@ -75,8 +75,8 @@ field = {
     {0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0},
-    {1,1,1,1,0,0,0,1,1,1},
-    {1,1,1,1,0,0,0,1,1,1}
+    {0,0,0,0,0,0,0,0,0,0},
+    {0,0,0,0,0,0,0,0,0,0}
 }
 
 clrBg = {0,0,0}
@@ -98,13 +98,14 @@ dx = 0
 rotation = false
 force_fall = false
 
-music_enabled = true
+music_enabled = false
 sound_enabled = true
 
 is_alive = true
 points = 0
 
 delta = 0
+time_step = 1
 
 -- ------------------------------------------
 
@@ -115,10 +116,13 @@ function love.load()
     love.graphics.setBackgroundColor(clrBg)
 
     music = love.audio.newSource('res/ost.mp3')
-    love.audio.play(music)
+    if music_enabled then
+        love.audio.play(music)
+    end
 
     sound_correct = love.audio.newSource('res/correct.wav')
     sound_wrong = love.audio.newSource('res/wrong.wav')
+    sound_lose = love.audio.newSource('res/lose.wav')
 end
 
 function love.keypressed(key, unicode)
@@ -152,6 +156,11 @@ end
 
 function love.update(dt)
     if not is_alive then
+        love.audio.stop(music)
+        if sound_enabled then
+            play_sound(sound_lose)
+            sound_enabled = false
+        end
         return true
     end
 
@@ -177,7 +186,16 @@ function love.update(dt)
         dx = 0
     end
 
-    if delta > .1 then
+    if force_fall then
+        figure_a_y = do_a_force_fall(field, figure_a, figure_a_x, figure_a_y)
+
+        -- ensure that player could not do anything before we merge the figure
+        delta = time_step + 1
+
+        force_fall = false
+    end
+
+    if delta > time_step then
         figure_a_fallen = do_the_gravity(field, figure_a, figure_a_x, figure_a_y)
 
         if figure_a_fallen then
@@ -187,14 +205,24 @@ function love.update(dt)
             gained_points = remove_filled()
             if gained_points > 0 then
                 points = points + gained_points
+
+                if points > 1000 / time_step then
+                    time_step = time_step * 0.9
+                end
             end
 
             figure_a = figure_n
             figure_a_x = 3
             figure_a_y = 0
-            -- TODO check if game is over
-                -- is_alive = false
-                -- figure_a = do an empty figure here
+            is_alive = check_if_alive(figure_a, figure_a_x, figure_a_y)
+            if not is_alive then
+                figure_a = {
+                    {1,1,1,1},
+                    {1,1,1,1},
+                    {1,1,1,1},
+                    {1,1,1,1}
+                }
+            end
             figure_n = figures[love.math.random(#figures)]
         end
 
@@ -212,6 +240,51 @@ end
 
 -- ------------------------------------------
 
+function do_a_force_fall(field, figure, posx, posy)
+    can_fall_further = true
+    dy = 0
+
+    while can_fall_further do
+        y = 1
+        while y < 5 do
+            x = 1
+            while x < 5 do
+                if figure[y][x] == 1 then
+                    if posy+y+dy >= 20 then
+                        can_fall_further = false
+                    elseif field[posy+y+dy+1][posx+x] == 1 then
+                        can_fall_further = false
+                    end
+                end
+                x = x + 1
+            end
+            y = y + 1
+        end
+
+        dy = dy + 1
+    end
+
+    return posy+dy-1
+end
+
+function check_if_alive(figure, posx, posy)
+    y = 1
+    while y < 5 do
+        x = 1
+        while x < 5 do
+            if figure[y][x] == 1 then
+                if field[posy+y][posx+x] == 1 then
+                    return false
+                end
+            end
+            x = x + 1
+        end
+        y = y + 1
+    end
+
+    return true
+end
+
 function remove_filled()
     removed_lines = 0
 
@@ -219,7 +292,6 @@ function remove_filled()
     while y > 0 do
         filled_cells = 0
         for x = 1, field_w do
-            print(x)
             filled_cells = filled_cells + field[y][x]
         end
         if filled_cells == 10 then

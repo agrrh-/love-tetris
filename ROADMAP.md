@@ -11,6 +11,8 @@ Done:
 - music
 - figures rotation
 - destroy filled lines
+- implement force fall
+- sound on lose
 
 To do:
 
