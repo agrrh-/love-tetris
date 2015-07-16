@@ -1,8 +1,9 @@
 -- ------------------------------------------
 -- I, O, L, r, S, Z, T
-blocksMap = {
+figures = {
     { -- O
         color = { 255, 255, 255 },
+        offset = {0, -1},
         map = {
             {0,0,0,0},
             {0,1,1,0},
@@ -12,33 +13,37 @@ blocksMap = {
     },
     { -- I
         color = { 0, 255, 255 },
+        offset = {0, -2},
         map = {
-            {0,0,1,0},
-            {0,0,1,0},
-            {0,0,1,0},
-            {0,0,1,0}
+            {0,0,0,0},
+            {0,0,0,0},
+            {1,1,1,1},
+            {0,0,0,0}
         }
     },
     { -- L
         color = { 255, 0, 255 },
+        offset = {0, -1},
         map = {
-            {0,1,0,0},
-            {0,1,0,0},
-            {0,1,1,0},
+            {0,0,0,0},
+            {0,0,1,0},
+            {1,1,1,0},
             {0,0,0,0}
         }
     },
     { -- r
         color = { 255, 0, 0 },
+        offset = {0, -1},
         map = {
             {0,0,0,0},
-            {0,1,1,0},
             {0,1,0,0},
-            {0,1,0,0}
+            {0,1,1,1},
+            {0,0,0,0}
         }
     },
     { -- S
         color = { 0, 255, 0 },
+        offset = {0, -1},
         map = {
             {0,0,0,0},
             {0,0,1,1},
@@ -48,6 +53,7 @@ blocksMap = {
     },
     { -- Z
         color = { 0, 0, 255 },
+        offset = {0, -1},
         map = {
             {0,0,0,0},
             {1,1,0,0},
@@ -57,6 +63,7 @@ blocksMap = {
     },
     { -- T
         color = { 255, 255, 0 },
+        offset = {0, -1},
         map = {
             {0,0,0,0},
             {0,0,1,0},
@@ -94,10 +101,32 @@ function love.load()
 
     score = 0
     isAlive = true
+
+    -- active and next figures
+    figure_a = figures[love.math.random(#figures)]
+    figure_n = figures[love.math.random(#figures)]
+
+    direction = false
+    rotation = false
+end
+
+function love.keypressed(key)
+    if key == "up" then
+        rotation = true
+    --elseif key == "down" then
+    --    direction = "down"
+    elseif key == "left" then
+        direction = "left"
+    elseif key == "right" then
+        direction = "right"
+    elseif key == "escape" then
+        love.event.quit()
+    end
 end
 
 function love.update(dt)
-
+    --while isAlive do
+    --end
 end
 
 function love.draw()
@@ -106,18 +135,34 @@ function love.draw()
     update_scoreboard()
     draw_field()
 
-    draw_block_at_field(0, 0)
-
-    --while isAlive do
-    --end
+    if figure_a then
+        draw_figure_at_field(figure_a, 0, 0)
+    end
 end
 
 ----------------------------------------------------------------------
 
-function draw_block_at_field(x, y)
-    y = field_height_blocks - 1 - y
+function draw_figure_at_field(figure, posx, posy)
+    x = 1
+    while x <= 4 do
+        y = 1
+        while y <= 4 do
+            if figure['map'][y][x] == 1 then
+                draw_block_at_field(
+                    posx + x - 1 + figure['offset'][1],
+                    posy + y - 1 + figure['offset'][2],
+                    figure['color']
+                )
+            end
+            y = y + 1
+        end
+        x = x + 1
+    end
+end
 
-    love.graphics.setColor( clrBlock )
+function draw_block_at_field(x, y, color)
+    love.graphics.setColor( color )
+
     love.graphics.draw(
         blockImage,
         x * block_size,
