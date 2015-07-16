@@ -74,9 +74,9 @@ field = {
     {0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0},
     {0,0,0,0,0,0,0,0,0,0},
-    {0,1,0,0,0,0,0,0,0,0},
-    {0,1,0,0,0,0,0,0,0,0},
-    {1,1,0,0,0,0,0,0,0,0}
+    {0,0,0,0,0,0,0,0,0,0},
+    {1,1,1,1,0,0,0,1,1,1},
+    {1,1,1,1,0,0,0,1,1,1}
 }
 
 clrBg = {0,0,0}
@@ -99,6 +99,10 @@ rotation = false
 force_fall = false
 
 music_enabled = true
+sound_enabled = true
+
+is_alive = true
+points = 0
 
 delta = 0
 
@@ -119,7 +123,7 @@ end
 
 function love.keypressed(key, unicode)
     if key == 'escape' then
-        love.quit()
+        r = love.event.quit()
     elseif key == 'w' or key == 'up' then
         rotation = true
     elseif key == 'a' or key == 'left' then
@@ -129,47 +133,68 @@ function love.keypressed(key, unicode)
     elseif key == 's' or key == 'down' then
         force_fall = true
     elseif key == 'm' then
-        if music_enabled == true then
+        if music_enabled then
             love.audio.stop(music)
             love.audio.rewind(music)
             music_enabled = false
         else
+            music_enabled = true
             love.audio.play(music)
+        end
+    elseif key == 'n' then
+        if sound_enabled then
+            sound_enabled = false
+        else
+            sound_enabled = true
         end
     end
 end
 
 function love.update(dt)
+    if not is_alive then
+        return true
+    end
+
     delta = delta + dt
+
+    if rotation then
+        rotation = false
+
+        if check_if_rotation_available(figure_a, figure_a_x, figure_a_y) then
+            figure_a = rotate(figure_a)
+        else
+            play_sound(sound_wrong)
+        end
+    end
 
     if dx ~= 0 then
         mx = check_if_move_available(figure_a, figure_a_x, figure_a_y, dx)
         if mx == 0 then
-            love.audio.play(sound_wrong)
-            love.audio.rewind(sound_wrong)
+            play_sound(sound_wrong)
         end
         dx = dx * mx
         figure_a_x = figure_a_x + dx
         dx = 0
     end
 
-    if force_fall then
-        force_fall = false
-    end
-
-    if rotation then
-        rotation = false
-    end
-
-    if delta > 1 then
+    if delta > .1 then
         figure_a_fallen = do_the_gravity(field, figure_a, figure_a_x, figure_a_y)
 
         if figure_a_fallen then
             merge_figure(field, figure_a, figure_a_x, figure_a_y)
-            love.audio.play(sound_correct)
+            play_sound(sound_correct)
+
+            gained_points = remove_filled()
+            if gained_points > 0 then
+                points = points + gained_points
+            end
+
             figure_a = figure_n
             figure_a_x = 3
             figure_a_y = 0
+            -- TODO check if game is over
+                -- is_alive = false
+                -- figure_a = do an empty figure here
             figure_n = figures[love.math.random(#figures)]
         end
 
@@ -186,6 +211,90 @@ function love.draw()
 end
 
 -- ------------------------------------------
+
+function remove_filled()
+    removed_lines = 0
+
+    y = field_h
+    while y > 0 do
+        filled_cells = 0
+        for x = 1, field_w do
+            print(x)
+            filled_cells = filled_cells + field[y][x]
+        end
+        if filled_cells == 10 then
+            i = y
+            while i > 0 do
+                if i > 1 then
+                    field[i] = field[i-1]
+                else
+                    field[i] = {0,0,0,0,0,0,0,0,0,0}
+                end
+                i = i - 1
+            end
+            removed_lines = removed_lines + 1
+        else
+            y = y - 1
+        end
+    end
+
+    return calculate_points(removed_lines)
+end
+
+function calculate_points(lines)
+    if lines == 0 then
+        return 0
+    else
+        return lines + calculate_points(lines-1)
+    end
+end
+
+function check_if_rotation_available(figure, posx, posy)
+    phantom_figure = {
+        {},{},{},{}
+    }
+
+    phantom_figure = rotate(figure)
+
+    y = 1
+    while y < 5 do
+        x = 1
+        while x < 5 do
+            if phantom_figure[y][x] == 1 then
+                if posx+x+dx > field_w or posx+x+dx < 1 then
+                    return false
+                elseif field[posy+y][posx+x+dx] == 1 then
+                    return false
+                end
+            end
+            x = x + 1
+        end
+        y = y + 1
+    end
+
+    return true
+end
+
+function rotate(matrix_in)
+    matrix_out = {
+        {},{},{},{}
+    }
+
+    for j = 1, 4 do
+        for i = 1, 4 do
+            matrix_out[j][5-i] = matrix_in[i][j]
+        end
+    end
+
+    return matrix_out
+end
+
+function play_sound(sound)
+    if sound_enabled then
+        love.audio.play(sound)
+        love.audio.rewind(sound)
+    end
+end
 
 function check_if_move_available(figure, posx, posy, dx)
     mx = 1
@@ -273,10 +382,6 @@ function draw_figure_field(figure, posx, posy)
                 posxd = (posx + x) * block_size
                 posyd = (posy + y) * block_size
                 draw_block(posxd, posyd, clrMain)
-            else
-                posxd = (posx + x) * block_size
-                posyd = (posy + y) * block_size
-                draw_block(posxd, posyd, clrFieldBg)
             end
             x = x + 1
         end

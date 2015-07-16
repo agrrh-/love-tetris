@@ -9,9 +9,9 @@ Done:
 - handle figures collision
 - figures control
 - music
+- figures rotation
+- destroy filled lines
 
 To do:
 
-- figures rotation
-- destroy filled lines
 - particles effect
