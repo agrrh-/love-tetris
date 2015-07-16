@@ -1,10 +1,10 @@
 Done:
 
 - draw field
+- do a blocks map: I, O, L, r, S, Z, T
 
 To do:
 
-- do a block maps: I, O, L, r, S, Z, T
 - draw random block
 - do a falling block
 - handle floor collision and figure saving
