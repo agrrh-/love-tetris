@@ -105,9 +105,15 @@ function love.load()
     -- active and next figures
     figure_a = figures[love.math.random(#figures)]
     figure_n = figures[love.math.random(#figures)]
+    field = {}
+
+    figure_a_pos = {3,-2}
+    push_forces = {0,1}
 
     direction = false
     rotation = false
+
+    f = 0
 end
 
 function love.keypressed(key)
@@ -125,8 +131,13 @@ function love.keypressed(key)
 end
 
 function love.update(dt)
-    --while isAlive do
-    --end
+    if isAlive then
+        if f % 16 == 0 then
+            figure_push(push_forces[1], push_forces[2])
+        end
+    end
+
+    f = f + 1
 end
 
 function love.draw()
@@ -136,11 +147,20 @@ function love.draw()
     draw_field()
 
     if figure_a then
-        draw_figure_at_field(figure_a, 0, 0)
+        draw_figure_at_field(figure_a, figure_a_pos[1], figure_a_pos[2])
     end
 end
 
 ----------------------------------------------------------------------
+
+function figure_push(dx, dy)
+    check_for_collisions(field)
+
+    figure_a_pos = {
+        figure_a_pos[1] + dx,
+        figure_a_pos[2] + dy,
+    }
+end
 
 function draw_figure_at_field(figure, posx, posy)
     x = 1
