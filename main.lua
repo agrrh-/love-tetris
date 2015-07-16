@@ -1,15 +1,5 @@
 -- ------------------------------------------
 
--- test single block
-figures = {
-    {
-        {0,0,0,0},
-        {0,0,1,0},
-        {0,0,0,0},
-        {0,0,0,0}
-    }
-}
-
 -- I, O, L, r, S, Z, T
 figures = {
     { -- O
@@ -98,7 +88,7 @@ dx = 0
 rotation = false
 force_fall = false
 
-music_enabled = false
+music_enabled = true
 sound_enabled = true
 
 is_alive = true
@@ -123,6 +113,9 @@ function love.load()
     sound_correct = love.audio.newSource('res/correct.wav')
     sound_wrong = love.audio.newSource('res/wrong.wav')
     sound_lose = love.audio.newSource('res/lose.wav')
+
+    mainFont = love.graphics.newFont("res/bebas.ttf", 24);
+    love.graphics.setFont(mainFont);
 end
 
 function love.keypressed(key, unicode)
@@ -236,6 +229,14 @@ function love.draw()
 
     draw_figure_field(figure_a, figure_a_x, figure_a_y)
     draw_figure_side(figure_n)
+
+    if not is_alive then
+        love.graphics.print(
+            'GAME OVER!',
+            (field_w + 0.5) * block_size,
+            7.5 * block_size
+        )
+    end
 end
 
 -- ------------------------------------------
@@ -510,5 +511,13 @@ function draw_interface()
         0.5 * block_size,
         block_size*4,
         block_size*4
+    )
+
+    love.graphics.printf(
+        'Score: \n' .. points*100,
+        (field_w + 0.5) * block_size,
+        5.5 * block_size,
+        128,
+        'left'
     )
 end
