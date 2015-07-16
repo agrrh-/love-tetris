@@ -1,10 +1,10 @@
 Done:
 
 - do a blocks map: I, O, L, r, S, Z, T
+- draw interface
 
 To do:
 
-- draw field
 - draw random block
 - do a falling block
 - next figure display
