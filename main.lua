@@ -145,6 +145,7 @@ function love.draw()
 
     update_scoreboard()
     draw_field()
+    draw_next_figure(figure_n)
 
     if figure_a then
         draw_figure_at_field(figure_a, figure_a_pos[1], figure_a_pos[2])
@@ -154,7 +155,7 @@ end
 ----------------------------------------------------------------------
 
 function figure_push(dx, dy)
-    check_for_collisions(field)
+    --check_for_collisions(field)
 
     figure_a_pos = {
         figure_a_pos[1] + dx,
@@ -191,6 +192,35 @@ function draw_block_at_field(x, y, color)
     )
 end
 
+function draw_block_at_scoreboard(x, y, color)
+    love.graphics.setColor( color )
+
+    love.graphics.draw(
+        blockImage,
+        field_width + 32 + x * block_size/2,
+        96 + y * block_size/2,
+        0, block_scale/2, block_scale/2
+    )
+end
+
+function draw_next_figure(figure)
+    x = 1
+    while x <= 4 do
+        y = 1
+        while y <= 4 do
+            if figure['map'][y][x] == 1 then
+                draw_block_at_scoreboard(
+                    x - 1 + figure['offset'][1],
+                    y - 1 + figure['offset'][2],
+                    figure['color']
+                )
+            end
+            y = y + 1
+        end
+        x = x + 1
+    end
+end
+
 function update_scoreboard()
     love.graphics.setColor( clrBgAlt )
     love.graphics.rectangle(
@@ -204,6 +234,12 @@ function update_scoreboard()
         "Score: " .. score,
         field_width + 16,
         16
+    )
+
+    love.graphics.print(
+        "Next figure: ",
+        field_width + 16,
+        64
     )
 end
 

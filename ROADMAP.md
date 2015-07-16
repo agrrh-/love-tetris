@@ -4,6 +4,7 @@ Done:
 - do a blocks map: I, O, L, r, S, Z, T
 - draw random block
 - do a falling block
+- next figure display
 
 To do:
 
@@ -12,6 +13,5 @@ To do:
 - figures control
 - figures rotation
 - destroy filled lines
-- next figure display
 - particles effect
 - music
