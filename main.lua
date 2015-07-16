@@ -57,11 +57,16 @@ figures = {
 clrBg = {0,0,0}
 clrFieldBg = {32,32,32}
 clrFieldBorder = {92,92,92}
-clrDraw = {255,255,255}
+clrMain = {255,255,255}
 
 block_size = 32
 field_w = 10
 field_h = 20
+
+figure_a = figures[love.math.random(#figures)]
+figure_a_x = 3
+figure_a_y = 0
+figure_n = figures[love.math.random(#figures)]
 
 -- ------------------------------------------
 
@@ -78,14 +83,57 @@ end
 
 function love.draw()
     draw_interface()
+
+    draw_figure_field(figure_a, figure_a_x, figure_a_y)
+    draw_figure_side(figure_n)
 end
 
 -- ------------------------------------------
 
-function draw_figure(posx, posy)
+function draw_figure_field(figure, posx, posy)
+    y = 1
+    while y < 5 do
+        x = 1
+        while x < 5 do
+            if figure[y][x] == 1 then
+                posxd = (posx + x) * block_size
+                posyd = (posy + y) * block_size
+                draw_block(posxd, posyd, clrMain)
+            else
+                posxd = (posx + x) * block_size
+                posyd = (posy + y) * block_size
+                draw_block(posxd, posyd, clrFieldBg)
+            end
+            x = x + 1
+        end
+        y = y + 1
+    end
+end
+
+function draw_figure_side(figure)
+    y = 1
+    while y < 5 do
+        x = 1
+        while x < 5 do
+            if figure[y][x] == 1 then
+                posx = (field_w + x + 0.5) * block_size
+                posy = (y + 0.5) * block_size
+                draw_block(posx, posy, clrMain)
+            end
+            x = x + 1
+        end
+        y = y + 1
+    end
 end
 
 function draw_block(posx, posy, color)
+    love.graphics.setColor(color)
+    love.graphics.rectangle("fill",
+        posx - block_size,
+        posy - block_size,
+        block_size,
+        block_size
+    )
 end
 
 function draw_interface()
