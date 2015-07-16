@@ -89,6 +89,8 @@ rotation = false
 force_fall = false
 
 music_enabled = true
+music_len = 290
+music_rewinder = 0
 sound_enabled = true
 
 is_alive = true
@@ -135,6 +137,7 @@ function love.keypressed(key, unicode)
             love.audio.rewind(music)
             music_enabled = false
         else
+            music_rewinder = 0
             music_enabled = true
             love.audio.play(music)
         end
@@ -158,6 +161,17 @@ function love.update(dt)
     end
 
     delta = delta + dt
+    if music_enabled then
+        music_rewinder = music_rewinder + dt
+    end
+
+    if music_rewinder > music_len then
+        if music_enabled then
+            love.audio.rewind(music)
+            love.audio.play(music)
+        end
+        music_rewinder = 0
+    end
 
     if rotation then
         rotation = false
