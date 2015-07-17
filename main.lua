@@ -92,6 +92,7 @@ music_enabled = true
 music_len = 290
 music_rewinder = 0
 sound_enabled = true
+sound_locked = false
 
 is_alive = true
 points = 0
@@ -115,9 +116,10 @@ function love.load()
     sound_correct = love.audio.newSource('res/correct.wav')
     sound_wrong = love.audio.newSource('res/wrong.wav')
     sound_lose = love.audio.newSource('res/lose.wav')
+    sound_points = love.audio.newSource('res/points.wav')
 
     mainFont = love.graphics.newFont("res/bebas.ttf", 24);
-    love.graphics.setFont(mainFont);
+    smallFont = love.graphics.newFont("res/bebas.ttf", 16);
 end
 
 function love.keypressed(key, unicode)
@@ -207,15 +209,17 @@ function love.update(dt)
 
         if figure_a_fallen then
             merge_figure(field, figure_a, figure_a_x, figure_a_y)
-            play_sound(sound_correct)
 
             gained_points = remove_filled()
             if gained_points > 0 then
+                play_sound(sound_points)
                 points = points + gained_points
 
                 if points > 1000 / time_step then
                     time_step = time_step * 0.9
                 end
+            else
+                play_sound(sound_correct)
             end
 
             figure_a = figure_n
@@ -378,8 +382,12 @@ end
 
 function play_sound(sound)
     if sound_enabled then
-        love.audio.play(sound)
-        love.audio.rewind(sound)
+        if not sound_locked then
+            sound_locked = true
+            love.audio.play(sound)
+            love.audio.rewind(sound)
+            sound_locked = false
+        end
     end
 end
 
@@ -527,10 +535,20 @@ function draw_interface()
         block_size*4
     )
 
+    love.graphics.setFont(mainFont);
     love.graphics.printf(
         'Score: \n' .. points*100,
         (field_w + 0.5) * block_size,
         5.5 * block_size,
+        128,
+        'left'
+    )
+
+    love.graphics.setFont(smallFont);
+    love.graphics.printf(
+        'Controls:\n\n[a] - left\n[d] - right\n[w] - rotate\n[s] - force fall\n\n[m] - music\n[n] - sounds\n\n[esc] - exit',
+        (field_w + 0.5) * block_size,
+        8.5 * block_size,
         128,
         'left'
     )

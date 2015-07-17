@@ -13,7 +13,8 @@ Done:
 - destroy filled lines
 - implement force fall
 - sound on lose
+- particles effect (done, but looked ugly, so removed)
+- added sound on line cleared
+- added simple controls help
 
 To do:
-
-- particles effect
